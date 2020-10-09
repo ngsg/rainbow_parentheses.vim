@@ -21,31 +21,21 @@ let g:rbpt_colorpairs = [
     \ ['darkred',     'DarkOrchid3'],
     \ ['red',         'firebrick3'],
     \ ]
-```
 
-```vim
 let g:rbpt_max = 16
-```
 
-```vim
-let g:rbpt_loadcmd_toggle = 0
+let g:rbpt_types = [['(', ')'], ['\[', '\]'], ['{', '}']]
 ```
 
 ### Commands:
 
 ```vim
-:RainbowParenthesesToggle       " Toggle it on/off
-:RainbowParenthesesLoadRound    " (), the default when toggling
-:RainbowParenthesesLoadSquare   " []
-:RainbowParenthesesLoadBraces   " {}
-:RainbowParenthesesLoadChevrons " <>
+:RainbowParentheses         " Activate
+:RainbowParenthesesClear    " Deactivate
 ```
 
 ### Always On:
 
 ```vim
-au VimEnter * RainbowParenthesesToggle
-au Syntax * RainbowParenthesesLoadRound
-au Syntax * RainbowParenthesesLoadSquare
-au Syntax * RainbowParenthesesLoadBraces
+au Syntax * RainbowParentheses
 ```

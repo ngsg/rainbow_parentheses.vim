@@ -24,8 +24,8 @@ let s:pairs = [
 	\ ]
 let s:pairs = exists('g:rbpt_colorpairs') ? g:rbpt_colorpairs : s:pairs
 let s:max = exists('g:rbpt_max') ? g:rbpt_max : max([len(s:pairs), 16])
-let s:loadtgl = exists('g:rbpt_loadcmd_toggle') ? g:rbpt_loadcmd_toggle : 0
 let s:types = [['(',')'],['\[','\]'],['{','}'],['<','>']]
+let s:types = exists('g:rbpt_types') ? g:rbpt_types : s:types
 
 func! s:extend()
 	if s:max > len(s:pairs)
@@ -38,11 +38,18 @@ endfunc
 cal s:extend()
 
 func! rainbow_parentheses#activate()
-	let [id, s:active] = [1, 1]
+  let [id, s:active] = [1, 1]
 	for [ctermfg, guifg] in s:pairs
 		exe 'hi default level'.id.'c ctermfg='.ctermfg.' guifg='.guifg
 		let id += 1
 	endfor
+  for type in s:types
+    cal rainbow_parentheses#load(type)
+  endfor
+  augroup rainbow_parentheses
+    autocmd!
+    autocmd ColorScheme,Syntax * call rainbow_parentheses#activate()
+  augroup END
 endfunc
 
 func! rainbow_parentheses#clear()
@@ -52,27 +59,6 @@ func! rainbow_parentheses#clear()
 	let s:active = 0
 endfunc
 
-func! rainbow_parentheses#toggle()
-	if !exists('s:active')
-		cal rainbow_parentheses#load(0)
-	endif
-	let afunc = exists('s:active') && s:active ? 'clear' : 'activate'
-	cal call('rainbow_parentheses#'.afunc, [])
-endfunc
-
-func! rainbow_parentheses#toggleall()
-	if !exists('s:active')
-		cal rainbow_parentheses#load(0)
-		cal rainbow_parentheses#load(1)
-		cal rainbow_parentheses#load(2)
-	endif
-	if exists('s:active') && s:active
-		cal rainbow_parentheses#clear()
-	else
-		cal rainbow_parentheses#activate()
-	endif
-endfunc
-
 func! s:cluster()
 	let levels = join(map(range(1, s:max), '"level".v:val'), ',')
 	exe 'sy cluster rainbow_parentheses contains=@TOP'.levels.',NoInParens'
@@ -80,19 +66,14 @@ endfunc
 cal s:cluster()
 
 func! rainbow_parentheses#load(...)
-	let [level, grp, type] = ['', '', s:types[a:1]]
+  let type = a:1
+	let [level, grp] = ['', '']
 	let alllvls = map(range(1, s:max), '"level".v:val')
-	if !exists('b:loaded')
-		let b:loaded = [0,0,0,0]
-	endif
-	let b:loaded[a:1] = s:loadtgl && b:loaded[a:1] ? 0 : 1
 	for each in range(1, s:max)
-		let region = 'level'. each .(b:loaded[a:1] ? '' : 'none')
-		let grp = b:loaded[a:1] ? 'level'.each.'c' : 'Normal'
+		let region = 'level'. each 
+		let grp = 'level'.each.'c'
 		let cmd = 'sy region %s matchgroup=%s start=/%s/ end=/%s/ contains=TOP,%s,NoInParens'
 		exe printf(cmd, region, grp, type[0], type[1], join(alllvls, ','))
 		cal remove(alllvls, 0)
 	endfor
 endfunc
-
-" vim:ts=2:sw=2:sts=2
